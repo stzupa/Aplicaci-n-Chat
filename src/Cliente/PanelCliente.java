@@ -5,11 +5,16 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -17,27 +22,31 @@ import javax.swing.JTextField;
 @SuppressWarnings("serial")
 public class PanelCliente extends JPanel implements Runnable{
 	
-	private JTextField campo1;
+	private JTextField mensaje;
 	private JButton boton;
 	private JTextArea areaChat;
-	private JTextField nick;
-	private JTextField ip;
+	private JLabel nick;
+	private JComboBox ip;
+	private InetAddress mInetAddress;
+	private String miIp;
 	
-	public PanelCliente() {
+	public PanelCliente() throws UnknownHostException {
 		
-		nick = new JTextField(5);
+		mInetAddress = InetAddress.getLocalHost();
+		miIp = mInetAddress.getHostAddress();
+		nick = new JLabel();
+		nick.setText(JOptionPane.showInputDialog("Nick: "));
 		add(nick);
 		JLabel cliente = new JLabel("-Chat-");
 		add(cliente);		
-		ip = new JTextField(15);
+		ip = new JComboBox<>();
 		add(ip);
-		campo1 = new JTextField(20);		
+		mensaje = new JTextField(20);		
 		areaChat = new JTextArea(12, 20);
-		
-				
+		areaChat.setEditable(false);	
 		
 		add(areaChat);
-		add(campo1);
+		add(mensaje);
 		
 		boton = new JButton("Enviar");
 		
@@ -53,14 +62,18 @@ public class PanelCliente extends JPanel implements Runnable{
 					EnvioPaqueteDatos paquete = new EnvioPaqueteDatos();
 					
 					paquete.setNick(nick.getText());
-					paquete.setIp(ip.getText());
-					paquete.setTexto(campo1.getText());
+					paquete.setIp(ip.getSelectedItem().toString());
+					paquete.setTexto(mensaje.getText());
 					
 					ObjectOutputStream objetoSalida = new ObjectOutputStream(socket.getOutputStream());
 					
 					objetoSalida.writeObject(paquete);
 					
 					socket.close();
+					
+					areaChat.append("yo:" + "\n" + paquete.getTexto() + "\n");
+					
+					mensaje.setText("");
 					
 				} catch (IOException e1) {
 					e1.printStackTrace();
@@ -69,11 +82,10 @@ public class PanelCliente extends JPanel implements Runnable{
 			}
 		});
 		
-		add(boton);
+		add(boton);		
 		
 		Thread hiloThread = new Thread(this);
-		hiloThread.start();
-		
+		hiloThread.start();		
 		
 	}
 
@@ -91,11 +103,25 @@ public class PanelCliente extends JPanel implements Runnable{
 				clienteSocket = serverSocketEscucha.accept();
 				ObjectInputStream flujoEntrada = new ObjectInputStream(clienteSocket.getInputStream());
 				paqueteDatosRecibido = (EnvioPaqueteDatos) flujoEntrada.readObject();
-				areaChat.append("nick: " + paqueteDatosRecibido.getNick() + "\n" +
-								"mensaje: " + paqueteDatosRecibido.getTexto() + "\n");
 				
+				if (paqueteDatosRecibido.getTexto().equals(" online")) {
+					//areaChat.append("\n" + paqueteDatosRecibido.getDireccionesIp());
+					ArrayList<String> ipS = new ArrayList<>();
+					
+					ipS = paqueteDatosRecibido.getDireccionesIp();
+					
+					for (String string : ipS) {
+						System.out.println(string);
+						if (!miIp.equals(string)) {
+							ip.addItem(string);
+						}						
+					}
+					
+				}else {
+					areaChat.append(paqueteDatosRecibido.getNick() + "\n" +
+									paqueteDatosRecibido.getTexto() + "\n");
+				}
 			}
-			
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -104,9 +130,6 @@ public class PanelCliente extends JPanel implements Runnable{
 		}
 		
 		
-	}
-	
-	
-	
+	}	
 
 }

@@ -1,10 +1,13 @@
 package Cliente;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
+@SuppressWarnings("serial")
 public class EnvioPaqueteDatos implements Serializable {
 	
 	private String nick, ip, texto;
+	private ArrayList<String> direccionesIp;
 
 	public String getNick() {
 		return nick;
@@ -28,6 +31,14 @@ public class EnvioPaqueteDatos implements Serializable {
 
 	public void setTexto(String texto) {
 		this.texto = texto;
+	}
+
+	public ArrayList<String> getDireccionesIp() {
+		return direccionesIp;
+	}
+
+	public void setDireccionesIp(ArrayList<String> direccionesIp) {
+		this.direccionesIp = direccionesIp;
 	}
 	
 	
