@@ -14,3 +14,5 @@ El proyecto contiene dos paquetes:
 Cada uno de estos paquetes contiene las clases necesarias para crear las ventanas y realizar la conexion con el servidor.
 
 El servidor recibe un paquete de datos de un cliente, entonces guarda un registro del los datos y envía un nuevo paquete al cliente de destino.
+
+Proyecto realizado en Eclipse
